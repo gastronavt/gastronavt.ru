@@ -1,0 +1,8 @@
+User-Agent: *
+Disallow:
+Sitemap: https://gastronavt.ru/sitemap.xml
+
+User-agent: Yandex
+Disallow:
+Host: gastronavt.ru
+Sitemap: https://gastronavt.ru/sitemap.xml

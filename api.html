@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Gastronavt API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #020617;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #22c55e;
+            --border: #1e293b;
+            --code-bg: #020617;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Inter, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ===== MOBILE MENU TOGGLE ===== */
+        #menu-toggle {
+            display: none;
+        }
+
+        .menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        aside {
+            width: 280px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            transition: transform .3s ease;
+        }
+
+        aside h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        aside a {
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 6px 0;
+            font-size: 14px;
+        }
+
+        aside a:hover {
+            color: var(--accent);
+        }
+
+        main {
+            margin-left: 280px;
+            padding: 40px;
+            max-width: 1100px;
+        }
+
+        h1 { font-size: 34px; margin-bottom: 10px; }
+        h2 {
+            margin-top: 48px;
+            font-size: 26px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        h3 { margin-top: 28px; font-size: 20px; }
+
+        p { color: var(--muted); line-height: 1.6; }
+
+        code, pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        code { padding: 2px 6px; font-size: 13px; }
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        table th, table td {
+            border: 1px solid var(--border);
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        table th {
+            background: #020617;
+            text-align: left;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .post { background: #1e293b; color: #38bdf8; }
+        .get  { background: #1e293b; color: #22c55e; }
+
+        footer {
+            margin-top: 80px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 900px) {
+            .menu-btn {
+                display: block;
+            }
+
+            aside {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            #menu-toggle:checked + aside {
+                transform: translateX(0);
+            }
+
+            main {
+                margin-left: 0;
+                padding: 80px 20px 40px;
+            }
+        }
+		
+		.tg-button {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			margin-top: 12px;
+			padding: 12px 18px;
+			border-radius: 10px;
+			background: linear-gradient(135deg, #2AABEE, #229ED9);
+			color: #fff;
+			text-decoration: none;
+			font-weight: 600;
+			font-size: 14px;
+			box-shadow: 0 6px 20px rgba(42,171,238,.35);
+			transition: transform .15s ease, box-shadow .15s ease;
+		}
+
+		.tg-button:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 10px 26px rgba(42,171,238,.45);
+		}
+
+		.tg-button span {
+			font-size: 18px;
+		}
+
+    </style>
+</head>
+
+<body>
+
+<label for="menu-toggle" class="menu-btn">☰ Меню</label>
+<input type="checkbox" id="menu-toggle">
+
+<aside>
+    <h2>Gastronavt API</h2>
+    <a href="#intro">Введение</a>
+    <a href="#auth">Авторизация</a>
+    <a href="#create-order">Создание заказа</a>
+    <a href="#update-order">Обновление заказа</a>
+    <a href="#get-orders">Получение заказов</a>
+    <a href="#get-orders-by-status">Заказы по статусу</a>
+    <a href="#products">Товары</a>
+    <a href="#send-template">Шаблонные сообщения</a>
+    <a href="#update-balance">Обновление баланса</a>
+    <a href="#update-balance-batch">Массовое обновление</a>
+    <a href="#errors">Ошибки</a>
+</aside>
+
+<main>
+
+<section id="intro">
+    <h1>Gastronavt API</h1>
+    <p>
+        API платформы <b>Gastronavt</b> предназначен для интеграции товароучетных систем,
+        сторонних приложений, CRM и прочих учетных систем с Gastronavt.
+    </p>
+
+    <p>
+        Базовый endpoint:<br>
+        <code>https://АДРЕС_АПИ/index.php?entryPoint=GastronavtApi</code>
+    </p>
+	
+	<p>
+		Реальный адрес API выдается индивидуально и может быть
+		получен через поддержку в Telegram.
+	</p>
+	<a href="https://t.me/gastronavt_channel"
+	   target="_blank"
+	   class="tg-button">
+		<span>✈️</span>
+		Написать в Telegram
+	</a>
+</section>
+
+<section id="auth">
+    <h2>Авторизация</h2>
+    <p>
+        Все запросы выполняются с использованием параметра
+        <code>secret_key</code>, который выдается разработчиком Gastronavt
+        для каждой площадки (landing).
+    </p>
+
+    <p>
+		Получить <code>secret_key</code> и реальный адрес API
+		можно через поддержку в Telegram:
+	</p>
+
+	<a href="https://t.me/gastronavt_channel"
+	   target="_blank"
+	   class="tg-button">
+		<span>✈️</span>
+		Написать в Telegram
+	</a>
+
+</section>
+
+<section id="create-order">
+    <h2>Создание заказа</h2>
+    <span class="badge post">POST</span>
+
+    <pre>
+method=createOrder
+secret_key=XXXX
+external_id=000237575
+name=Иван
+phone=89999999999
+street=Садовая
+home=1
+products=00000001572,00000001570
+    </pre>
+</section>
+
+<section id="update-order">
+    <h2>Обновление заказа</h2>
+    <span class="badge post">POST</span>
+
+    <p>
+        Метод позволяет обновить данные существующего заказа.
+        Для идентификации заказа необходимо передать
+        <code>order_id</code> или <code>order_name</code>.
+    </p>
+
+    <p>
+        Поддерживается частичное обновление — можно передавать
+        только те поля, которые требуется изменить.
+    </p>
+
+    <h3>Параметры</h3>
+    <table>
+        <tr>
+            <th>Параметр</th>
+            <th>Обязательный</th>
+            <th>Описание</th>
+        </tr>
+        <tr>
+            <td>method</td>
+            <td>Да</td>
+            <td>Имя метода API — <code>updateOrder</code></td>
+        </tr>
+        <tr>
+            <td>secret_key</td>
+            <td>Да</td>
+            <td>Секретный ключ площадки</td>
+        </tr>
+        <tr>
+            <td>order_id</td>
+            <td>Нет*</td>
+            <td>Внутренний идентификатор заказа</td>
+        </tr>
+        <tr>
+            <td>order_name</td>
+            <td>Нет*</td>
+            <td>Номер заказа (отображаемый)</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <small>
+                    * Необходимо передать <b>order_id</b> или <b>order_name</b>
+                </small>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Обновляемые поля</h3>
+    <table>
+        <tr>
+            <th>Поле</th>
+            <th>Описание</th>
+            <th>Формат</th>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td>Статус заказа (через маппинг Gastronavt)</td>
+            <td>Строка / код статуса</td>
+        </tr>
+        <tr>
+            <td>pay_method</td>
+            <td>Способ оплаты</td>
+            <td>Код способа оплаты</td>
+        </tr>
+        <tr>
+            <td>comment</td>
+            <td>Комментарий к заказу (до 255 символов)</td>
+            <td>Строка</td>
+        </tr>
+        <tr>
+            <td>receiving_method</td>
+            <td>Способ получения заказа</td>
+            <td>Код способа получения</td>
+        </tr>
+        <tr>
+            <td>delivery_date</td>
+            <td>Дата доставки</td>
+            <td><code>dd.mm.yyyy</code></td>
+        </tr>
+        <tr>
+            <td>delivery_time</td>
+            <td>Время доставки</td>
+            <td><code>HH:MM</code></td>
+        </tr>
+    </table>
+
+    <p>
+        Все значения <code>status</code>, <code>pay_method</code>,
+        <code>receiving_method</code> проходят проверку и
+        маппинг на стороне платформы <b>Gastronavt</b>.
+        При передаче неподдерживаемого значения метод вернет ошибку.
+    </p>
+
+    <h3>Пример запроса</h3>
+
+    <pre>
+{
+  "secret_key": "G3mW2yS7pHq9xN1aC4v7kQ2zT8l5bR0fE6c3dU9mY1o",
+  "method": "updateOrder",
+  "order_name": "3360444",
+  "status": "02"
+}
+    </pre>
+
+    <p><b>Пример обновления даты и времени доставки</b></p>
+
+    <pre>
+{
+  "secret_key": "XXXX",
+  "method": "updateOrder",
+  "order_id": "e60c9052-3c49-7d9e-50e8-69595aa977ae",
+  "delivery_date": "05.01.2026",
+  "delivery_time": "14:30"
+}
+    </pre>
+
+    <p><b>Пример обновления комментария и способа оплаты</b></p>
+
+    <pre>
+{
+  "secret_key": "XXXX",
+  "method": "updateOrder",
+  "order_name": "3360444",
+  "comment": "Клиент попросил перезвонить",
+  "pay_method": "02"
+}
+    </pre>
+
+    <h3>Пример ответа</h3>
+
+    <pre>
+{
+    "message": "Order updated successfully",
+    "order_id": "e60c9052-3c49-7d9e-50e8-69595aa977ae",
+    "order_name": "3360444",
+    "updated_fields": {
+        "status_c": "02"
+    }
+}
+    </pre>
+</section>
+
+<section id="get-orders">
+    <h2>Получение заказов</h2>
+    <span class="badge get">GET</span>
+
+    <p>
+        Метод возвращает список заказов по указанным идентификаторам или номерам заказов.
+        Можно передавать один или несколько <code>order_id</code> или <code>order_name</code>,
+        разделяя значения запятой.
+    </p>
+
+    <h3>Параметры</h3>
+    <table>
+        <tr>
+            <th>Параметр</th>
+            <th>Обязательный</th>
+            <th>Описание</th>
+        </tr>
+        <tr>
+            <td>method</td>
+            <td>Да</td>
+            <td>Имя метода API — <code>getOrders</code></td>
+        </tr>
+        <tr>
+            <td>secret_key</td>
+            <td>Да</td>
+            <td>Секретный ключ площадки (выдается Gastronavt)</td>
+        </tr>
+        <tr>
+            <td>order_id</td>
+            <td>Нет*</td>
+            <td>Внутренний идентификатор заказа. Можно передавать несколько через запятую</td>
+        </tr>
+        <tr>
+            <td>order_name</td>
+            <td>Нет*</td>
+            <td>Номер заказа (отображаемый). Можно передавать несколько через запятую</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <small>
+                    * Необходимо передать <b>order_id</b> или <b>order_name</b>
+                </small>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Примеры запроса</h3>
+
+    <p><b>Получение одного заказа по id</b></p>
+    <pre>
+{
+  "method": "getOrders",
+  "secret_key": "XXXX",
+  "order_id": "e6b3fa67-6bf8-6492-0d80-695dfbf2b4ee"
+}
+    </pre>
+
+    <p><b>Получение нескольких заказов по id</b></p>
+    <pre>
+{
+  "method": "getOrders",
+  "secret_key": "XXXX",
+  "order_id": "e6b3fa67-6bf8-6492-0d80-695dfbf2b4ee, a123b456-c789-0def-1234-567890abcdef"
+}
+    </pre>
+
+    <p><b>Получение одного заказа по имени</b></p>
+    <pre>
+{
+  "method": "getOrders",
+  "secret_key": "XXXX",
+  "order_name": "3567978"
+}
+    </pre>
+
+    <p><b>Получение нескольких заказов по имени</b></p>
+    <pre>
+{
+  "method": "getOrders",
+  "secret_key": "XXXX",
+  "order_name": "3567978,3567890"
+}
+    </pre>
+
+    <h3>Пример ответа</h3>
+    <pre>
+{
+    "message": "Orders fetched successfully",
+    "total": 2,
+    "items": [
+        {
+            "order_id": "e6b3fa67-6bf8-6492-0d80-695dfbf2b4ee",
+            "order_name": "3567978",
+            "order_date_entered": "2026-01-07 12:30:00",
+            "client_name": "Иван Иванов",
+            "client_phone": "+7 900 123-45-67",
+            "client_email": "ivan@example.com",
+            "delivery_date": "07.01.2026",
+            "delivery_time": "14:00",
+            "status": "02",
+            "pay_method": "01",
+            "all_price": 1200,
+            "delivery_price": 0,
+            "sale_price": 1200,
+            "products": [
+                {
+                    "id": "50605c1f-dd12-8eb6-9c84-693fa5bc8da4",
+                    "vendor_code": "10000021288",
+                    "name": "Куриное крыло",
+                    "quantity": 2,
+                    "sale_price": 279,
+                    "total_sale_price": 558
+                }
+            ]
+        }
+    ]
+}
+    </pre>
+</section>
+
+
+<section id="get-orders-by-status">
+    <h2>Получение заказов по статусу</h2>
+    <span class="badge get">GET</span>
+
+    <p>
+        Метод возвращает список заказов с указанным статусом.
+        Используется для синхронизации заказов, мониторинга обработки
+        и интеграции с внешними системами.
+    </p>
+
+    <h3>Параметры</h3>
+    <table>
+        <tr>
+            <th>Параметр</th>
+            <th>Обязательный</th>
+            <th>Описание</th>
+        </tr>
+        <tr>
+            <td>method</td>
+            <td>Да</td>
+            <td>Имя метода API — <code>getOrdersByStatus</code></td>
+        </tr>
+        <tr>
+            <td>secret_key</td>
+            <td>Да</td>
+            <td>Секретный ключ площадки (выдается Gastronavt)</td>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td>Да</td>
+            <td>Код статуса заказа</td>
+        </tr>
+    </table>
+
+    <h3>Пример запроса</h3>
+    <pre>
+method=getOrdersByStatus
+secret_key=XXXX
+status=20
+    </pre>
+
+    <h3>Доступные статусы заказов</h3>
+
+    <table>
+        <tr><th>Код</th><th>Описание</th></tr>
+        <tr><td>01</td><td>Новый (не подтвержденный)</td></tr>
+        <tr><td>12</td><td>Передано по интеграции</td></tr>
+        <tr><td>02</td><td>Диспетчер принял в работу</td></tr>
+        <tr><td>11</td><td>Заказ передан на кухню</td></tr>
+        <tr><td>08</td><td>Заказ приготовлен</td></tr>
+        <tr><td>03</td><td>Установлен предварительный курьер</td></tr>
+        <tr><td>04</td><td>Курьер принял в работу</td></tr>
+        <tr><td>10</td><td>Диспетчер подтвердил заказ</td></tr>
+        <tr><td>05</td><td>Курьер подъезжает к заведению</td></tr>
+        <tr><td>06</td><td>Курьер забрал заказ</td></tr>
+        <tr><td>07</td><td>Курьер подъезжает к клиенту</td></tr>
+        <tr><td>09</td><td>Доставлено / Отдано</td></tr>
+        <tr><td>20</td><td>Отказ</td></tr>
+        <tr><td>99</td><td>Системный статус (ошибка)</td></tr>
+    </table>
+
+    <p>
+        Допускается использование статусов вашей собственной системы.
+        В этом случае необходимо предварительно настроить
+        маппинг статусов на стороне платформы <b>Gastronavt</b>.
+    </p>
+
+    <h3>Пример ответа</h3>
+
+    <pre>
+{
+    "message": "Orders fetched successfully",
+    "status": "20",
+    "total": 32,
+    "items": [
+        {
+            "order_id": "e60c9052-3c49-7d9e-50e8-69595aa977ae",
+            "order_name": "3561020",
+            "order_date_entered": "2026-01-03 18:05:02",
+
+            "client_name": "89086483458",
+            "client_phone": "+7 (908) 648-34-58",
+            "client_email": "elenacharushina41@gmail.com",
+            "client_date_of_birth": "1981-04-02",
+            "client_dont_call": false,
+            "client_rating": "1 ✔ / 1 ✘",
+            "client_bonuses": 0,
+
+            "receiving_method": "01",
+            "delivery_method": "02",
+            "delivery_date": "04.01.2026",
+            "delivery_time": "10:00",
+
+            "city_name": "Ангарск",
+            "street": "Промысловая",
+            "home": "46а",
+
+            "pay_method": "01",
+            "status_pay": "01",
+
+            "all_price": 4285,
+            "delivery_price": 0,
+            "sale_price": 4285,
+
+            "comment": "Мкр-он Китой",
+            "status": "20",
+
+            "products": [
+                {
+                    "id": "50605c1f-dd12-8eb6-9c84-693fa5bc8da4",
+                    "vendor_code": "10000021288",
+                    "name": "Куриное крыло (монолит) елка 1 кг",
+                    "quantity": 2,
+                    "sale_price": 279,
+                    "total_sale_price": 558
+                }
+            ]
+        }
+    ]
+}
+    </pre>
+</section>
+
+
+
+
+
+<section id="products">
+    <h2>Товары</h2>
+    <span class="badge get">GET</span>
+
+    <p>
+        Метод возвращает список товаров. Поддерживается фильтрация
+        по артикулу (<code>vendor_code</code>), внутреннему идентификатору
+        товара (<code>id</code>) и признаку активности (<code>active</code>).
+    </p>
+
+    <p>
+        Все параметры являются <b>опциональными</b>.
+        Если параметры не переданы, метод вернет
+        все существующие товары, включая неактивные (выключенные).
+    </p>
+
+    <h3>Параметры</h3>
+    <table>
+        <tr>
+            <th>Параметр</th>
+            <th>Описание</th>
+        </tr>
+        <tr>
+            <td>vendor_code</td>
+            <td>
+                Артикул товара. Можно передавать одно или несколько значений,
+                разделенных запятой
+            </td>
+        </tr>
+        <tr>
+            <td>id</td>
+            <td>
+                Внутренний идентификатор товара в системе Gastronavt.
+                Поддерживается передача нескольких id через запятую
+            </td>
+        </tr>
+        <tr>
+            <td>active</td>
+            <td>
+                Фильтр по активности товара:
+                <code>1</code> — активные,
+                <code>0</code> — неактивные
+            </td>
+        </tr>
+    </table>
+
+    <h3>Примеры вызовов</h3>
+
+    <p><b>Получение всех товаров</b></p>
+    <pre>
+method=getProducts
+secret_key=XXXX
+    </pre>
+
+    <p><b>Фильтрация по артикулу</b></p>
+    <pre>
+method=getProducts
+secret_key=XXXX
+vendor_code=10000019012,10000039784
+    </pre>
+
+    <p><b>Фильтрация по внутренним id товаров</b></p>
+    <pre>
+method=getProducts
+secret_key=XXXX
+id=11472d78-26ee-1305-5873-68c6999799b8,b0e93368-beee-7848-f9a6-69533769a8df
+    </pre>
+
+    <p><b>Получение только активных товаров</b></p>
+    <pre>
+method=getProducts
+secret_key=XXXX
+active=1
+    </pre>
+
+    <p><b>Комбинированный пример</b></p>
+    <pre>
+method=getProducts
+secret_key=XXXX
+vendor_code=10000029855
+active=0
+    </pre>
+
+    <h3>Пример ответа</h3>
+
+    <pre>
+{
+    "message": "Products retrieved successfully",
+    "total": 10,
+    "items": [
+        {
+            "id": "11472d78-26ee-1305-5873-68c6999799b8",
+            "vendor_code": "cbc3dce1-43df-439f-aa95-17655814e60e",
+            "name": "Котлеты из лососевых",
+            "description": null,
+            "sale_price": "300",
+            "active": "0",
+            "category": {
+                "id": "51357f90-7efb-598c-1930-68c699930bd4",
+                "name": "Полуфабрикаты"
+            }
+        }
+    ]
+}
+    </pre>
+</section>
+
+
+<section id="send-template">
+    <h2>Отправка шаблонных сообщений</h2>
+    <span class="badge post">POST</span>
+
+    <pre>
+method=sendTemplateMessage
+template_id=xxxxxxxx
+phone=89999999999
+    </pre>
+</section>
+
+<section id="update-balance">
+    <h2>Обновление бонусного баланса</h2>
+    <span class="badge post">POST</span>
+
+    <pre>
+method=updateBalance
+secret_key=XXXX
+phone=89999999999
+current_balance=1000
+    </pre>
+</section>
+
+<section id="update-balance-batch">
+    <h2>Массовое обновление баланса</h2>
+    <span class="badge post">POST</span>
+
+    <pre>
+{
+  "clients": [
+    { "phone": "89990000001", "current_balance": 500 },
+    { "phone": "89990000002", "current_balance": 300 }
+  ]
+}
+    </pre>
+</section>
+
+<section id="errors">
+    <h2>Ошибки</h2>
+
+    <pre>
+{
+  "error": "Missing required parameter"
+}
+    </pre>
+</section>
+
+<footer>
+    © Gastronavt Platform — API Documentation
+</footer>
+
+</main>
+
+</body>
+</html>
